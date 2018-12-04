@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/loading_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <FrameLayout
+            android:id="@+id/loading_icon"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_gravity="center">
+
+            <ImageView
+                android:layout_width="33dp"
+                android:layout_height="35dp"
+                android:src="@mipmap/loading_img"/>
+        </FrameLayout>
+    </FrameLayout>
+
+    <ListView
+        android:id="@+id/list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="13dp"
+        android:layout_marginRight="13dp"
+        android:divider="@color/colorLine0"
+        android:dividerHeight="1px"/>
+</RelativeLayout>

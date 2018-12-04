@@ -1,0 +1,35 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
+    implementation 'com.ont.media:ontplayer-java:1.0.0'
+    implementation 'com.ont.media:ontplayer-native:1.0.0'
+}
+
+ext {
+    versionCode = 3
+    versionName = "1.0.0"
+
+    PUBLISH_GROUP_ID = 'com.ont.media'
+    PUBLISH_ARTIFACT_ID = 'ontplayer-ui'
+    PUBLISH_VERSION = versionName
+}
+
+apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'

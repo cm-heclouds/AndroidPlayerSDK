@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:paddingLeft="13dp"
+        android:paddingRight="13dp">
+
+        <TextView
+            android:id="@+id/text_page_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:textColor="@color/colorText2"
+            android:textSize="17dp"
+            android:text="@string/page_live"/>
+        
+        <ImageView
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_toRightOf="@id/text_page_name"
+            android:layout_below="@id/text_page_name"
+            android:layout_marginLeft="6dp"
+            android:layout_marginTop="-4dp"
+            android:background="@mipmap/drop_down"/>
+        
+        <ImageView
+            android:id="@+id/img_get_back"
+            android:layout_width="17dp"
+            android:layout_height="17dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:background="@mipmap/get_back"/>
+    </RelativeLayout>
+    
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/colorLine0"/>
+
+    <FrameLayout
+        android:id="@+id/child_page"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="21dp"
+    android:paddingRight="21dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="19dp"
+            android:paddingLeft="7dp"
+            android:textSize="14dp"
+            android:textColor="@color/colorText2"
+            android:text="@string/player_protocol"
+            android:background="@drawable/text_background_0"/>
+
+        <RadioGroup
+            android:id="@+id/radio_group_protocol"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <RadioButton
+                android:id="@+id/radio_rtmp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="1dp"
+                android:gravity="center_vertical"
+                android:checked="true"
+                android:button="@android:color/transparent"
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/checkbox_button_background"
+                android:drawablePadding="11dp"
+                android:textSize="13dp"
+                android:textColor="@color/colorText0"
+                android:text="rtmp"/>
+
+            <RadioButton
+                android:id="@+id/radio_hls"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="1dp"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="40dp"
+                android:button="@android:color/transparent"
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/checkbox_button_background"
+                android:drawablePadding="11dp"
+                android:textSize="13dp"
+                android:textColor="@color/colorText0"
+                android:text="hls"/>
+
+            <RadioButton
+                android:id="@+id/radio_https_hls"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="1dp"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="40dp"
+                android:button="@android:color/transparent"
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/checkbox_button_background"
+                android:drawablePadding="11dp"
+                android:textSize="13dp"
+                android:textColor="@color/colorText0"
+                android:text="https-hls"/>
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="36dp"
+            android:paddingLeft="7dp"
+            android:textSize="14dp"
+            android:textColor="@color/colorText2"
+            android:text="@string/player_get_url0"
+            android:background="@drawable/text_background_0"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="12dp">
+
+            <EditText
+                android:id="@+id/edt_url"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:paddingRight="85dp"
+                android:maxLines="2"
+                android:textSize="13dp"
+                android:background="@drawable/edit_text_background" />
+
+            <TextView
+                android:id="@+id/btn_get"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|right"
+                android:paddingLeft="17dp"
+                android:paddingRight="17dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:textSize="12dp"
+                android:textColor="@color/colorActivatedLine"
+                android:text="@string/player_get_url1"
+                android:background="@drawable/btn_background_1"/>
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:paddingLeft="7dp"
+            android:textSize="14dp"
+            android:textColor="@color/colorText2"
+            android:text="@string/player_level"
+            android:background="@drawable/text_background_0"/>
+
+        <RadioGroup
+            android:id="@+id/radio_group_level"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radio_level_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="1dp"
+                android:gravity="center_vertical"
+                android:button="@android:color/transparent"
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/checkbox_button_background"
+                android:drawablePadding="11dp"
+                android:textSize="13dp"
+                android:textColor="@color/colorText0"
+                android:text="@string/player_level_4"/>
+
+            <RadioButton
+                android:id="@+id/radio_level_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="40dp"
+                android:paddingLeft="1dp"
+                android:gravity="center_vertical"
+                android:checked="true"
+                android:button="@android:color/transparent"
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/checkbox_button_background"
+                android:drawablePadding="11dp"
+                android:textSize="13dp"
+                android:textColor="@color/colorText0"
+                android:text="@string/player_level_3"/>
+
+            <RadioButton
+                android:id="@+id/radio_level_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="40dp"
+                android:paddingLeft="1dp"
+                android:gravity="center_vertical"
+                android:button="@android:color/transparent"
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/checkbox_button_background"
+                android:drawablePadding="11dp"
+                android:textSize="13dp"
+                android:textColor="@color/colorText0"
+                android:text="@string/player_level_2"/>
+        </RadioGroup>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/btn_play"
+        android:layout_width="317dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
+        android:gravity="center"
+        android:textSize="13dp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/btn_background_2"
+        android:text="@string/play" />
+</RelativeLayout>

@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">android_play_proj</string>
+    <string name="onenet_logo_name">视频能力·播放端 V1.0.0</string>
+    <string name="page_live">视频直播</string>
+    <string name="page_history">点播回放</string>
+    <string name="video_server_history">服务器视频</string>
+    <string name="video_device_history">设备视频</string>
+    <string name="tip_input_setting">请补全配置信息</string>
+    <string name="tip_play">直播地址不能为空</string>
+    <string name="device_id">设备ID</string>
+    <string name="player_channel">摄像头通道ID</string>
+    <string name="player_entry">进入播放器</string>
+    <string name="player_protocol">播放协议</string>
+    <string name="player_get_url0">获取直播地址</string>
+    <string name="player_get_url1">点击获取</string>
+    <string name="player_level">清晰度选择</string>
+    <string name="player_level_4">超清</string>
+    <string name="player_level_3">高清</string>
+    <string name="player_level_2">标清</string>
+    <string name="play">播放</string>
+    <string name="get">获取</string>
+    <string name="local_history">本地视频</string>
+    <string name="pic_history">服务器图片</string>
+    <string name="server_history">服务器视频</string>
+    <string name="device_history">设备视频</string>
+    <string name="record_stop">停录(%s)</string>
+    <string name="record_save">录像保存为:</string>
+    <string name="api_cmd_send_fail">指令发送失败</string>
+    <string name="start_audio_fail">播放连接未建立</string>
+</resources>
