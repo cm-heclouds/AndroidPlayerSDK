@@ -1,6 +1,5 @@
 package com.ont.player.sample;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,6 +13,10 @@ import com.ont.player.sample.mode.DeviceEntryInfo;
 import com.ont.player.sample.utils.PermissionUtils;
 
 public class PlayerSelectActivity extends AppCompatActivity {
+
+    public static final String DEVICE_ID = "device_id";
+    public static final String CHANNEL_ID = "channel_id";
+    public static final String API_KEY = "api_key";
 
     private final int PAGE_LIVE = 1;
     private final int PAGE_HISTORY = 2;
@@ -32,9 +35,9 @@ public class PlayerSelectActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         mDeviceEntryInfo = new DeviceEntryInfo();
-        mDeviceEntryInfo.mApiKey = intent.getStringExtra("api_key");
-        mDeviceEntryInfo.mChannelId = intent.getStringExtra("channel_id");
-        mDeviceEntryInfo.mDeviceId = intent.getStringExtra("device_id");
+        mDeviceEntryInfo.mApiKey = intent.getStringExtra(API_KEY);
+        mDeviceEntryInfo.mChannelId = intent.getStringExtra(CHANNEL_ID);
+        mDeviceEntryInfo.mDeviceId = intent.getStringExtra(DEVICE_ID);
 
         mLivePage = new LivePage(this);
         mLivePage.setDeviceEntryInfo(mDeviceEntryInfo);

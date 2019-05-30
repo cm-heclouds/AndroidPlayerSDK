@@ -33,7 +33,7 @@ public class CheckCmdRequest extends OntPlayerRequest {
 
     @Override
     String getRequestUrl() {
-        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/ipc/video/cmd_status?device_id=%s&cmd_uuid=%s", device_id, cmd_uuid);
+        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/cmd_status?device_id=%s&cmd_uuid=%s", device_id, cmd_uuid);
     }
 
     @Override

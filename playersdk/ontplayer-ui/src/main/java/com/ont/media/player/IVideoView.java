@@ -1,5 +1,7 @@
 package com.ont.media.player;
 
+import tv.danmaku.ijk.media.player.IMediaPlayer;
+
 public interface IVideoView {
 
     void start();
@@ -8,9 +10,9 @@ public interface IVideoView {
 
     long getDuration();
 
-    long getCurrentPosition();
+    long[] getCurrentPosition();
 
-    void seekTo(long pos);
+    int seekTo(long reference, long pos);
 
     boolean isPlaying();
 
@@ -32,7 +34,7 @@ public interface IVideoView {
 
     void setScreenScale(int screenScale);
 
-    void retry();
+    void retry(boolean getPlayLive, boolean isPlayLive);
 
     void setSpeed(float speed);
 
@@ -50,4 +52,6 @@ public interface IVideoView {
     int writeDuplex(short pktType, byte[] buf, int size, long ts);
 
     void doScreenshot();
+
+    int getVideoTimeSlots(int cookie, long startTime, long endTime, IMediaPlayer.IGetVideoTimeSlotCallback callback);
 }

@@ -17,7 +17,7 @@
             android:layout_marginTop="19dp"
             android:paddingLeft="7dp"
             android:textSize="14dp"
-            android:textColor="@color/colorText2"
+            android:textColor="@color/color_black0"
             android:text="@string/player_protocol"
             android:background="@drawable/text_background_0"/>
 
@@ -81,7 +81,7 @@
             android:layout_marginTop="36dp"
             android:paddingLeft="7dp"
             android:textSize="14dp"
-            android:textColor="@color/colorText2"
+            android:textColor="@color/color_black0"
             android:text="@string/player_get_url0"
             android:background="@drawable/text_background_0"/>
 
@@ -121,7 +121,7 @@
             android:layout_marginTop="26dp"
             android:paddingLeft="7dp"
             android:textSize="14dp"
-            android:textColor="@color/colorText2"
+            android:textColor="@color/color_black0"
             android:text="@string/player_level"
             android:background="@drawable/text_background_0"/>
 

@@ -3,4 +3,6 @@
     <color name="dkplayer_theme_color">#39C5BB</color>
     <color name="dkplayer_theme_color_translucent">#9939C5BB</color>
     <color name="dkplayer_background_color">#96000000</color>
+    <color name="province_line_border">#D0D0D0</color>
+    <color name="color_black0">#ff393e4c</color>
 </resources>

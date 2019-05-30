@@ -23,8 +23,8 @@ import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
-import android.graphics.SurfaceTexture;
 import android.graphics.Rect;
+import android.graphics.SurfaceTexture;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.RingtoneManager;
@@ -41,7 +41,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
-
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,6 +48,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -58,6 +58,7 @@ import tv.danmaku.ijk.media.player.misc.IAndroidIO;
 import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
 import tv.danmaku.ijk.media.player.misc.ITrackInfo;
 import tv.danmaku.ijk.media.player.misc.IjkTrackInfo;
+import tv.danmaku.ijk.media.player.misc.TimeBarSlot;
 import tv.danmaku.ijk.media.player.pragma.DebugLog;
 
 /**
@@ -157,6 +158,9 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
     private int mVideoSarDen;
 
     private String mDataSource;
+    private int mCacheTaskCookie;
+    private HashMap<Integer, CacheTask> mCacheTaskList;
+
     /**
      * Default library loader
      * Load them by yourself, if your libraries are not installed at default place.
@@ -232,6 +236,8 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
          * create it here than in C++.
          */
         native_setup(new WeakReference<IjkMediaPlayer>(this));
+        mCacheTaskCookie = 0;
+        mCacheTaskList = new HashMap<>(10);
     }
 
     private native void _setFrameAtTime(String imgCachePath, long startTime, long endTime, int num, int imgDefinition)
@@ -334,7 +340,7 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
             throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
         final String scheme = uri.getScheme();
         if (ContentResolver.SCHEME_FILE.equals(scheme)) {
-            setDataSource(uri.getPath());
+            setDataSource(uri.getPath(), headers);
             return;
         } else if (ContentResolver.SCHEME_CONTENT.equals(scheme)
                 && Settings.AUTHORITY.equals(uri.getAuthority())) {
@@ -369,9 +375,7 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
                 fd.close();
             }
         }
-
         Log.d(TAG, "Couldn't open file on client side, trying server side");
-
         setDataSource(uri.toString(), headers);
     }
 
@@ -395,8 +399,7 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
     @Override
     public void setDataSource(String path)
             throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
-        mDataSource = path;
-        _setDataSource(path, null, null);
+        setDataSource(path, null);
     }
 
     /**
@@ -406,9 +409,11 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
      * @param headers the headers associated with the http request for the stream you want to play
      * @throws IllegalStateException if it is called in an invalid state
      */
+    @Override
     public void setDataSource(String path, Map<String, String> headers)
-            throws IOException, IllegalArgumentException, SecurityException, IllegalStateException
-    {
+            throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
+        mDataSource = path;
+
         if (headers != null && !headers.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for(Map.Entry<String, String> entry: headers.entrySet()) {
@@ -422,7 +427,7 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
                 setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "protocol_whitelist", "async,cache,crypto,file,http,https,ijkhttphook,ijkinject,ijklivehook,ijklongurl,ijksegment,ijktcphook,pipe,rtp,tcp,tls,udp,ijkurlhook,data");
             }
         }
-        setDataSource(path);
+        _setDataSource(path, null, null);
     }
 
     /**
@@ -673,13 +678,31 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
     public native void doScreenshot() throws IllegalStateException;
 
     @Override
-    public native void seekTo(long msec) throws IllegalStateException;
+    public native int seekTo(long reference, long msec) throws IllegalStateException;
 
     @Override
-    public native long getCurrentPosition();
+    public native long[] getCurrentPosition();
 
     @Override
     public native long getDuration();
+
+    @Override
+    public int getVideoTimeSlots(int cookie, long startTime, long endTime, IGetVideoTimeSlotCallback callback) {
+
+        int innerCookie = mCacheTaskCookie++;
+        int ret = _getVideoTimeSlots(innerCookie, startTime, endTime);
+        if (ret >= 0 && callback != null) {
+            CacheTask task = new CacheTask();
+            task.cookie = cookie;
+            task.start_time = startTime;
+            task.end_time = endTime;
+            task.callback = callback;
+            mCacheTaskList.put(innerCookie, task);
+        }
+        return ret;
+    }
+
+    public native int _getVideoTimeSlots(int cookie, long startTime, long endTime);
 
     /**
      * Releases resources associated with this IjkMediaPlayer object. It is
@@ -700,7 +723,7 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
     @Override
     public void release() {
         if (mWriteDuplexFlag != 0) {
-            notifyOnInfo(MEDIA_INFO_STOP_WRITE_THREAD, 0);
+            notifyOnInfo(MEDIA_INFO_STOP_WRITE_THREAD, 0, null);
         }
         stayAwake(false);
         updateSurfaceScreenOn();
@@ -717,11 +740,15 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
 
         if (mWriteDuplexFlag != 0) {
 
-            notifyOnInfo(MEDIA_INFO_STOP_WRITE_THREAD, 0);
+            notifyOnInfo(MEDIA_INFO_STOP_WRITE_THREAD, 0, null);
         }
 
         // make sure none of the listeners get called anymore
         mEventHandler.removeCallbacksAndMessages(null);
+
+        // TODO betali release reset区别，什么时候清理拉取任务列表
+        mCacheTaskCookie = 0;
+        mCacheTaskList.clear();
 
         mVideoWidth = 0;
         mVideoHeight = 0;
@@ -1051,7 +1078,7 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
                         player.setWriteDuplexFlag(msg.arg2);
                         break;
                 }
-                player.notifyOnInfo(msg.arg1, msg.arg2);
+                player.notifyOnInfo(msg.arg1, msg.arg2, msg.obj);
                 // No real default action so far.
                 return;
             case MEDIA_TIMED_TEXT:
@@ -1071,7 +1098,19 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
                 player.notifyOnVideoSizeChanged(player.mVideoWidth, player.mVideoHeight,
                         player.mVideoSarNum, player.mVideoSarDen);
                 break;
-
+            case MEDIA_TIME_SLOTS_COMPLETE:
+                CacheTask task = player.mCacheTaskList.get(msg.arg1);
+                if (task == null) {
+                    break;
+                }
+                player.mCacheTaskList.remove(msg.arg1);
+                task.callback.OnComplete(task.cookie, task.start_time, task.end_time, msg.arg2, (TimeBarSlot[])msg.obj);
+                break;
+            case MEDIA_MARS_XLOG:
+                if (BuildConfig.DEBUG) {
+                    //com.tencent.mars.xlog.TXLog.i("timestamp", (String) msg.obj);
+                }
+                break;
             default:
                 DebugLog.e(TAG, "Unknown message type " + msg.what);
             }
@@ -1306,4 +1345,11 @@ public final class IjkMediaPlayer extends AbstractMediaPlayer {
     public static native void native_profileBegin(String libName);
     public static native void native_profileEnd();
     public static native void native_setLogLevel(int level);
+
+    private static class CacheTask {
+        public int cookie;
+        public long start_time;
+        public long end_time;
+        public IGetVideoTimeSlotCallback callback;
+    }
 }

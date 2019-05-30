@@ -7,6 +7,12 @@ package com.ont.media.player;
 
 public class PlayerConfig {
 
+    public interface PlayType {
+
+        int TYPE_NORMAL = 0x01;
+        int TYPE_CYCLE = 0x02;
+    }
+
     public boolean isLooping;//是否循环播放
     public boolean mAutoRotate;//是否旋转屏幕
     public boolean addToPlayerManager;//是否添加到播放管理器
@@ -20,13 +26,19 @@ public class PlayerConfig {
     public boolean isLocalVideo; // 是否本地视频流
     public boolean enableMediaPlayerSoftScreenshot; // 是否使用播放器软解码截屏功能（会增加软解码时的开销）
     public String screenshotPath; // 截图保存地址
+    public int playType; // 播放类型：普通播放；循环播放
+    public int maxCacheDuration; // 追帧最大缓存数
+    public boolean isPlayLive;//是否直播(非循环播放时生效)
 
     private PlayerConfig() {
 
         this.screenshotPath = "/sdcard";
+        this.playType = PlayType.TYPE_NORMAL;
+        this.maxCacheDuration = 3000;
     }
 
     private PlayerConfig(PlayerConfig origin) {
+        this.isPlayLive = origin.isPlayLive;
         this.isLooping = origin.isLooping;
         this.mAutoRotate = origin.mAutoRotate;
         this.addToPlayerManager = origin.addToPlayerManager;
@@ -38,6 +50,8 @@ public class PlayerConfig {
         this.enableMediaPlayerSoftScreenshot = origin.enableMediaPlayerSoftScreenshot;
         this.screenshotPath = origin.screenshotPath;
         this.isLocalVideo = origin.isLocalVideo;
+        this.playType = origin.playType;
+        this.maxCacheDuration = origin.maxCacheDuration;
     }
 
     public static class Builder {
@@ -69,6 +83,14 @@ public class PlayerConfig {
          */
         public Builder autoRotate() {
             target.mAutoRotate = true;
+            return this;
+        }
+
+        /**
+         * 是否直播
+         */
+        public Builder setPlayLive( boolean isPlayLive) {
+            target.isPlayLive = isPlayLive;
             return this;
         }
 
@@ -127,6 +149,15 @@ public class PlayerConfig {
             return this;
         }
 
+        public Builder setPlayType(int playType) {
+            target.playType = playType;
+            return this;
+        }
+
+        public Builder setMaxCacheDuration(int maxCacheDuration) {
+            target.maxCacheDuration = maxCacheDuration;
+            return this;
+        }
         public PlayerConfig build() {
             return new PlayerConfig(target);
         }

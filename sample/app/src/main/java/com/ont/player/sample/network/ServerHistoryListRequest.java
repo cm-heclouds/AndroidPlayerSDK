@@ -44,7 +44,7 @@ public class ServerHistoryListRequest extends OntPlayerRequest {
 
     @Override
     String getRequestUrl() {
-        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/ipc/video/vod/get_video_list?device_id=%s&channel_id=%s", device_id, channel_id);
+        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/vod/get_video_list?device_id=%s&channel_id=%s", device_id, channel_id);
     }
 
     @Override

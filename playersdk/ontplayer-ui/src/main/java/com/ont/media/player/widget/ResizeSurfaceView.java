@@ -38,8 +38,6 @@ public class ResizeSurfaceView extends SurfaceView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//        Log.i("@@@@", "onMeasure(" + MeasureSpec.toString(widthMeasureSpec) + ", "
-//                + MeasureSpec.toString(heightMeasureSpec) + ")");
         if (getRotation() == 90 || getRotation() == 270) { // 软解码时处理旋转信息，交换宽高
             widthMeasureSpec = widthMeasureSpec + heightMeasureSpec;
             heightMeasureSpec = widthMeasureSpec - heightMeasureSpec;
@@ -48,9 +46,6 @@ public class ResizeSurfaceView extends SurfaceView {
 
         int width = getDefaultSize(mVideoWidth, widthMeasureSpec);
         int height = getDefaultSize(mVideoHeight, heightMeasureSpec);
-
-//        Log.d("@@@@", "onMeasure: width" + width + "    height:" + height);
-
 
         //如果设置了比例
         switch (screenType) {
@@ -71,7 +66,6 @@ public class ResizeSurfaceView extends SurfaceView {
                 } else {
                     width = height / 3 * 4;
                 }
-//                Log.d("@@@@", "onMeasure 4:3 : width" + width + "    height:" + height);
                 break;
             case IjkVideoView.SCREEN_SCALE_MATCH_PARENT:
                 width = widthMeasureSpec;
@@ -101,10 +95,8 @@ public class ResizeSurfaceView extends SurfaceView {
 
                         // for compatibility, we adjust size based on aspect ratio
                         if (mVideoWidth * height < width * mVideoHeight) {
-                            //Log.i("@@@", "image too wide, correcting");
                             width = height * mVideoWidth / mVideoHeight;
                         } else if (mVideoWidth * height > width * mVideoHeight) {
-                            //Log.i("@@@", "image too tall, correcting");
                             height = width * mVideoHeight / mVideoWidth;
                         }
                     } else if (widthSpecMode == MeasureSpec.EXACTLY) {

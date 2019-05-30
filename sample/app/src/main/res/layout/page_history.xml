@@ -28,7 +28,7 @@
         tl:tl_tab_space_equal="true"
         tl:tl_textsize="12dp"
         tl:tl_textSelectColor="@color/colorActivatedLine"
-        tl:tl_textUnselectColor="@color/colorText2"
+        tl:tl_textUnselectColor="@color/color_black0"
         tl:tl_underline_color="@color/colorLine0"
         tl:tl_underline_height="1px"
         tl:tl_underline_gravity="BOTTOM"/>

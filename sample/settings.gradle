@@ -1,1 +1,16 @@
+def initEnvironment(){
+    Properties properties = new Properties()
+    File propertyFile = new File(rootDir.getAbsolutePath() + "/build.properties")
+    properties.load(propertyFile.newDataInputStream())
+    gradle.ext.nativeModuleVersion = properties.getProperty('build.native.version')
+    gradle.ext.javaModuleVersion = properties.getProperty('build.java.version')
+    gradle.ext.uiModuleVersion = properties.getProperty('build.ui.version')
+    gradle.ext.appVersion = properties.getProperty('build.app.version')
+    gradle.ext.appVersionCode = properties.getProperty('build.app.version.code').toInteger()
+    gradle.ext.minSdkVersion = properties.getProperty('min.sdk.version').toInteger()
+    gradle.ext.targetSdkVersion = properties.getProperty('target.sdk.version').toInteger()
+    gradle.ext.compileSdkVersion = properties.getProperty('compile.sdk.version').toInteger()
+    gradle.ext.supportLibraryVersion = properties.getProperty('support.library.version')
+}
+initEnvironment()
 include ':app'

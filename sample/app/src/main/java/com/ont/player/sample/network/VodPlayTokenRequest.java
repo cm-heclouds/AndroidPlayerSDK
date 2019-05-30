@@ -44,7 +44,7 @@ public class VodPlayTokenRequest extends OntPlayerRequest {
 
     @Override
     String getRequestUrl() {
-        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/ipc/video/vod/get_play_token?device_id=%s&channel_id=%s&video_id=%s", device_id, channel_id, video_id);
+        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/vod/get_play_token?device_id=%s&channel_id=%s&video_id=%s", device_id, channel_id, video_id);
     }
 
     @Override

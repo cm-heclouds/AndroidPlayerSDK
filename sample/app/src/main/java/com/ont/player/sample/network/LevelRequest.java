@@ -33,7 +33,7 @@ public class LevelRequest extends OntPlayerRequest {
 
     @Override
     String getRequestUrl() {
-        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/ipc/video/cmds?device_id=%s&qos=0&type=1", device_id);
+        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/cmds?device_id=%s&qos=0&type=1", device_id);
     }
 
     @Override

@@ -6,6 +6,7 @@ import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
@@ -17,14 +18,8 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 public class OntPlayer extends AbstractPlayer {
 
     protected IjkMediaPlayer mMediaPlayer;
-    private boolean isLooping;
-    private boolean isEnableMediaCodec;
-    private boolean isEnableMediaPlayerSoftScreenshot;
     protected Context mAppContext;
     private int mBufferedPercent;
-
-    // added by betali on 2018/09/07
-    protected String screenshotPath;
 
     public OntPlayer(Context context) {
         mAppContext = context.getApplicationContext();
@@ -54,7 +49,7 @@ public class OntPlayer extends AbstractPlayer {
     public void setOptions() {
 
         mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzemaxduration", 100L);
-        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", 65536L);
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", 262140L);
         mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "flush_packets", 1L);
         mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", 1L);
         mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1L);
@@ -119,12 +114,10 @@ public class OntPlayer extends AbstractPlayer {
 
     @Override
     public void reset() {
+
         mMediaPlayer.reset();
         mMediaPlayer.setOnVideoSizeChangedListener(onVideoSizeChangedListener);
-        mMediaPlayer.setLooping(isLooping);
         setOptions();
-        setEnableMediaCodec(isEnableMediaCodec);
-        setEnableMediaPlayerSoftScreenshot(isEnableMediaPlayerSoftScreenshot);
     }
 
     @Override
@@ -133,12 +126,18 @@ public class OntPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void seekTo(long time) {
+    public int seekTo(long reference, long time) {
+
+        int ret;
         try {
-            mMediaPlayer.seekTo((int) time);
+
+            ret = mMediaPlayer.seekTo(reference, time);
         } catch (IllegalStateException e) {
             e.printStackTrace();
+            ret = -1;
         }
+
+        return ret;
     }
 
     @Override
@@ -148,7 +147,7 @@ public class OntPlayer extends AbstractPlayer {
     }
 
     @Override
-    public long getCurrentPosition() {
+    public long[] getCurrentPosition() {
         return mMediaPlayer.getCurrentPosition();
     }
 
@@ -178,18 +177,51 @@ public class OntPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void setLooping(boolean isLooping) {
-        this.isLooping = isLooping;
-        mMediaPlayer.setLooping(isLooping);
+    public void setPlayerConfig(PlayerConfig playerConfig) {
+
+        mMediaPlayer.setLooping(playerConfig.isLooping);
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "play-cycle", playerConfig.playType == PlayerConfig.PlayType.TYPE_CYCLE ? 1 : 0);
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "play_cycle", playerConfig.playType == PlayerConfig.PlayType.TYPE_CYCLE ? 1 : 0);
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "ffplaycodec-screenshot-path", playerConfig.enableMediaPlayerSoftScreenshot ? playerConfig.screenshotPath : "");
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "ffplaycodec-screenshot", playerConfig.enableMediaPlayerSoftScreenshot ? 1 : 0);
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", playerConfig.enableMediaCodec ? 1 : 0);//开启硬解码
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", playerConfig.enableMediaCodec ? 1 : 0);
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-handle-resolution-change", playerConfig.enableMediaCodec ? 1 : 0);
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "max_cached_duration", playerConfig.maxCacheDuration);
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "play-live", playerConfig.isPlayLive ? 1 : 0);
     }
 
     @Override
-    public void setEnableMediaCodec(boolean isEnable) {
-        isEnableMediaCodec = isEnable;
-        int value = isEnable ? 1 : 0;
-        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", value);//开启硬解码
-        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", value);
-        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-handle-resolution-change", value);
+    public void setPlayCycleConfig(PlayCycleConfig playCycleConfig) {
+
+        if (playCycleConfig.maxCacheDuration != 0) {
+            mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "max-cache-duration", playCycleConfig.maxCacheDuration);
+        }
+        if (playCycleConfig.onceCacheDuration != 0) {
+            mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "once-cache-duration", playCycleConfig.onceCacheDuration);
+        }
+        if (playCycleConfig.cacheStartSecond != 0) {
+            mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "i-start-time", playCycleConfig.cacheStartSecond);
+        }
+        if (playCycleConfig.cacheEndSecond != 0) {
+            mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "i-end-time", playCycleConfig.cacheEndSecond);
+        }
+        if (playCycleConfig.currentShowSecond != 0) {
+            mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "i-show-time", playCycleConfig.currentShowSecond);
+        }
+        if (playCycleConfig.timeoutSecond != 0) {
+            mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rw_timeout", playCycleConfig.timeoutSecond * 1000000);
+        }
+        if (!TextUtils.isEmpty(playCycleConfig.liveUrl)) {
+            mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "live-url", playCycleConfig.liveUrl);
+        }
+        if (!TextUtils.isEmpty(playCycleConfig.tokenUrl)) {
+            mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "token-url", playCycleConfig.tokenUrl);
+        }
+        if (!TextUtils.isEmpty(playCycleConfig.apiKey)) {
+            mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "api-key", playCycleConfig.apiKey);
+        }
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "play-live", playCycleConfig.isPlayLive ? 1 : 0);
     }
 
     @Override
@@ -219,8 +251,8 @@ public class OntPlayer extends AbstractPlayer {
 
     private IMediaPlayer.OnInfoListener onInfoListener = new IMediaPlayer.OnInfoListener() {
         @Override
-        public boolean onInfo(IMediaPlayer iMediaPlayer, int what, int extra) {
-            notifyOnInfo(what, extra);
+        public boolean onInfo(IMediaPlayer iMediaPlayer, int what, int extra, Object obj) {
+            notifyOnInfo(what, extra, obj);
             return true;
         }
     };
@@ -251,19 +283,6 @@ public class OntPlayer extends AbstractPlayer {
         }
     };
 
-    // added by betali on 2018/08/31
-    @Override
-    public void setScreenshotPath(String path) {
-        screenshotPath = path;
-    }
-
-    @Override
-    public void setEnableMediaPlayerSoftScreenshot(boolean enable) {
-        isEnableMediaPlayerSoftScreenshot = enable;
-        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "ffplaycodec-screenshot-path", enable ? screenshotPath : "");
-        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "ffplaycodec-screenshot", enable ? 1 : 0);
-    }
-
     @Override
     public int writeDuplex(short pktType, byte[] buf, int size, long ts) {
         return mMediaPlayer.writeDuplex(pktType, buf, size, ts);
@@ -280,4 +299,10 @@ public class OntPlayer extends AbstractPlayer {
             notifyOnScreenshotComplete(ret, path);
         }
     };
+
+    @Override
+    public int getVideoTimeSlots(int cookie, long startTime, long endTime, IMediaPlayer.IGetVideoTimeSlotCallback callback) {
+
+        return mMediaPlayer.getVideoTimeSlots(cookie, startTime, endTime, callback);
+    }
 }

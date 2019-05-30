@@ -10,7 +10,7 @@ public interface OnPlayerEventListener {
 
     void onCompletion();
 
-    void onInfo(int what, int extra);
+    void onInfo(int what, int extra, Object obj);
 
     void onPrepared();
 

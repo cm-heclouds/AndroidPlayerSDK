@@ -140,6 +140,7 @@ public class LocalHistoryListView extends OntListView {
                         .setData(Uri.parse(path))
                         .putExtra(PlayerActivity.IS_LIVE, false)
                         .putExtra(PlayerActivity.IS_LOCAL, true)
+                        .putExtra(PlayerActivity.PLAY_CYCLE, false)
                         .putExtra(PlayerActivity.VIDEO_TITLE, info.getVideo_title()));
             }
 

@@ -16,6 +16,9 @@ public class ServerHistoryInfo implements IListItem {
     String rtmp_url;
     String hls_url;
 
+    // customer
+    boolean play_cycle;
+
     public String getVideoid() {
         return videoid;
     }
@@ -70,5 +73,13 @@ public class ServerHistoryInfo implements IListItem {
 
     public void setHls_url(String hls_url) {
         this.hls_url = hls_url;
+    }
+
+    public boolean isPlay_cycle() {
+        return play_cycle;
+    }
+
+    public void setPlay_cycle(boolean play_cycle) {
+        this.play_cycle = play_cycle;
     }
 }

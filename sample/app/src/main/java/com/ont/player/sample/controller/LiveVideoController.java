@@ -23,10 +23,6 @@ import java.util.List;
 
 public class LiveVideoController extends StandardVideoController {
 
-    public static final int PERMISSIONS_REQUEST = 8954;
-    private TextView audioButton;
-
-    private boolean pushingAudio;
 
     public LiveVideoController(@NonNull Context context) {
 
@@ -54,92 +50,5 @@ public class LiveVideoController extends StandardVideoController {
         totalTime.setVisibility(INVISIBLE);
 
         setLive();
-    }
-
-    @Override
-    public void onClick(View v) {
-
-        int i = v.getId();
-        if (i == R.id.mic_audio) {
-
-            opPushAudio(!pushingAudio);
-        } else {
-
-            super.onClick(v);
-        }
-    }
-
-    @Override
-    public void onSupportPushAudio(boolean support) {
-
-        if (support) {
-            // 语音推送按钮
-            audioButton = controllerView.findViewById(R.id.mic_audio);
-            audioButton.setVisibility(VISIBLE);
-            audioButton.setOnClickListener(this);
-        }
-    }
-
-    @Override
-    public void onEnablePushAudio(boolean enable) {
-
-        audioButton.setEnabled(enable);
-    }
-
-    @Override
-    public void onStoppedPushAudio() {
-
-        pushingAudio = false;
-        audioButton.setText("录音");
-    }
-
-    @Override
-    public void opPushAudio(boolean start) {
-
-        if (start && !pushingAudio) {
-
-            if (isRecordPermissionGranted()) {
-
-                if (mVideoView.startPushAudio() == 0) {
-
-                    pushingAudio = true;
-                    audioButton.setText("停止");
-                } else {
-                    Toast.makeText(getContext(), getContext().getString(R.string.start_audio_fail), Toast.LENGTH_SHORT).show();
-                }
-            } else {
-
-                requestRecordPermission();
-            }
-        } else if (!start && pushingAudio) {
-
-            pushingAudio = false;
-            mVideoView.stopPushAudio();
-            audioButton.setText("录音");
-        }
-    }
-
-    private boolean isRecordPermissionGranted() {
-
-        boolean microPhonePermissionGranted = ContextCompat.checkSelfPermission(hostPage, Manifest.permission.RECORD_AUDIO)
-                == PackageManager.PERMISSION_GRANTED;
-
-        return microPhonePermissionGranted;
-    }
-
-    private void requestRecordPermission() {
-
-        boolean microPhonePermissionGranted = ContextCompat.checkSelfPermission(hostPage, Manifest.permission.RECORD_AUDIO)
-                == PackageManager.PERMISSION_GRANTED;
-
-        final List<String> permissionList = new ArrayList();
-        if (!microPhonePermissionGranted) {
-            permissionList.add(Manifest.permission.RECORD_AUDIO);
-        }
-        if (permissionList.size() > 0 )
-        {
-            String[] permissionArray = permissionList.toArray(new String[permissionList.size()]);
-            ActivityCompat.requestPermissions(hostPage, permissionArray, PERMISSIONS_REQUEST);
-        }
     }
 }

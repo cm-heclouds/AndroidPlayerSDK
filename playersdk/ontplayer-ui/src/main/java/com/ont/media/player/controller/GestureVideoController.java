@@ -133,7 +133,7 @@ public abstract class GestureVideoController extends BaseVideoController {
                 mCenterView.setVisibility(GONE);
             }
             if (mNeedSeek) {
-                mVideoView.seekTo(mPosition);
+                mVideoView.seekTo(0, mPosition);
                 mNeedSeek = false;
             }
         }
@@ -147,7 +147,7 @@ public abstract class GestureVideoController extends BaseVideoController {
         deltaX = -deltaX;
         int width = getMeasuredWidth();
         int duration = (int) mVideoView.getDuration();
-        int currentPosition = (int) mVideoView.getCurrentPosition();
+        int currentPosition = (int) mVideoView.getCurrentPosition()[1];
         int position = (int) (deltaX / width * duration + currentPosition);
         if (position > currentPosition) {
             mCenterView.setIcon(R.drawable.dkplayer_ic_action_fast_forward);

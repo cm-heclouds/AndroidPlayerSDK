@@ -58,17 +58,17 @@ public class ServerHistoryListView extends OntListView {
 
                         if (apiErr != IRequestDef.IRequestResultDef.ERR_OK) {
 
-                            updateData(false, null);
+                            updateData(true, addPlayCycleItem(null));
                             return;
                         }
 
                         if (TextUtils.isEmpty(response)) {
 
-                            updateData(false, null);
+                            updateData(true, addPlayCycleItem(null));
                             return;
                         } else {
 
-                            updateData(true, parseJson(response));
+                            updateData(true, addPlayCycleItem(parseJson(response)));
                         }
                     }
                 });
@@ -84,60 +84,86 @@ public class ServerHistoryListView extends OntListView {
             public void onVideoItemClick(IListItem iListItem) {
 
                 final ServerHistoryInfo info = (ServerHistoryInfo)iListItem;
-                final String videoId = info.getVideoid();
+                if (info.isPlay_cycle()) {
 
-                VodPlayTokenRequest request1 = new VodPlayTokenRequest(mDeviceEntryInfo.mApiKey);
-                request1.setDevice_id(mDeviceEntryInfo.mDeviceId);
-                request1.setChannel_id(mDeviceEntryInfo.mChannelId);
-                request1.setVideo_id(info.getVideoid());
+                    startActivity(new Intent(getActivity(), PlayerActivity.class)
+                            .setData(Uri.parse(IRequestDef.IRequestUrlDef.API_URL + "/vod/get_video_list?device_id=" + mDeviceEntryInfo.mDeviceId + "&channel_id=" + mDeviceEntryInfo.mChannelId))
+                            .putExtra(PlayerActivity.IS_LIVE, false)
+                            .putExtra(PlayerActivity.IS_LOCAL, false)
+                            .putExtra(PlayerActivity.PLAY_CYCLE, true)
+                            .putExtra(PlayerActivity.LIVE_URL, IRequestDef.IRequestUrlDef.API_URL + "/play_address?device_id="+ mDeviceEntryInfo.mDeviceId +"&channel_id=" + mDeviceEntryInfo.mChannelId + "&protocol_type=0")
+                            .putExtra(PlayerActivity.TOKEN_URL, IRequestDef.IRequestUrlDef.API_URL + "/vod/get_play_token?device_id=" + mDeviceEntryInfo.mDeviceId + "&channel_id=" + mDeviceEntryInfo.mChannelId)
+                            .putExtra(PlayerActivity.API_KEY, mDeviceEntryInfo.mApiKey)
+                            .putExtra(PlayerActivity.VIDEO_TITLE, "最近7天视频缓存"));
 
-                request1.setRequest_listener(new IDataListener() {
-                    @Override
-                    public void onComplete(int apiErr, int dataErr, String response) {
+                } else {
 
-                        if (apiErr == IRequestDef.IRequestResultDef.ERR_OK) {
+                    final String videoId = info.getVideoid();
+                    VodPlayTokenRequest request1 = new VodPlayTokenRequest(mDeviceEntryInfo.mApiKey);
+                    request1.setDevice_id(mDeviceEntryInfo.mDeviceId);
+                    request1.setChannel_id(mDeviceEntryInfo.mChannelId);
+                    request1.setVideo_id(info.getVideoid());
+                    request1.setRequest_listener(new IDataListener() {
+                        @Override
+                        public void onComplete(int apiErr, int dataErr, String response) {
 
-                            try {
+                            if (apiErr == IRequestDef.IRequestResultDef.ERR_OK) {
 
-                                JSONObject videoInfo = new JSONObject(response);
-                                String playToken = videoInfo.optString("token") ;
+                                try {
 
-                                String playUrl = "";
-                                if (TextUtils.isEmpty(info.getHls_url())) {
+                                    JSONObject videoInfo = new JSONObject(response);
+                                    String playToken = videoInfo.optString("token") ;
 
-                                    playUrl = info.getRtmp_url() + "?" + playToken;
-                                } else {
+                                    String playUrl = "";
+                                    /*if (!TextUtils.isEmpty(info.getRtmp_url())) {
 
-                                    playUrl = info.getHls_url() + "?token=" + playToken;
+                                        playUrl = info.getRtmp_url() + "?" + playToken;
+                                    } else */if (!TextUtils.isEmpty(info.getHls_url())){
+
+                                        playUrl = info.getHls_url() + "?token=" + playToken;
+                                    } else {
+
+                                        Toast.makeText(getContext(), response, Toast.LENGTH_SHORT).show();
+                                        return;
+                                    }
+                                    startActivity(new Intent(getActivity(), PlayerActivity.class)
+                                            .setData(Uri.parse(playUrl))
+                                            .putExtra(PlayerActivity.IS_LIVE, false)
+                                            .putExtra(PlayerActivity.IS_LOCAL, false)
+                                            .putExtra(PlayerActivity.PLAY_CYCLE, false)
+                                            .putExtra(PlayerActivity.VIDEO_TITLE, videoId));
+
+                                } catch (JSONException e) {
+
                                 }
-                                startActivity(new Intent(getActivity(), PlayerActivity.class)
-                                        .setData(Uri.parse(playUrl))
-                                        .putExtra(PlayerActivity.IS_LIVE, false)
-                                        .putExtra(PlayerActivity.IS_LOCAL, false)
-                                        .putExtra(PlayerActivity.VIDEO_TITLE, videoId));
+                            } else {
 
-                            } catch (JSONException e) {
-
+                                Toast.makeText(getContext(), response, Toast.LENGTH_SHORT).show();
                             }
-                        } else {
-
-                            Toast.makeText(getContext(), response, Toast.LENGTH_SHORT).show();
                         }
-                    }
-                });
-                NetworkClient.doRequest(request1);
+                    });
+                    NetworkClient.doRequest(request1);
+                }
             }
 
             @Override
             public void onGetView(OntListAdapter.OntViewHolder holder, IListItem iListItem) {
 
                 ServerHistoryInfo info = (ServerHistoryInfo)iListItem;
-                holder.txtTime.setText(info.getStart_time() + "-" + info.getEnd_time());
-                holder.txtSize.setVisibility(View.VISIBLE);
-                holder.txtSize.setText(FormatUtils.formatFileSize(info.getSize()));
-                holder.txtTitle.setText(info.getName());
-                Glide.with(getActivity()).load("").placeholder(R.drawable.ic_launcher_background).error(R.drawable.ic_launcher_background)
-                        .into(holder.img);
+                if (info.isPlay_cycle()) {
+                    holder.txtTime.setText("时长: 7天循环录制");
+                    holder.txtSize.setVisibility(View.GONE);
+                    holder.txtTitle.setText("最近7天视频存储");
+                    Glide.with(getActivity()).load("").placeholder(R.drawable.ic_launcher_background).error(R.drawable.ic_launcher_background)
+                            .into(holder.img);
+                } else {
+                    holder.txtTime.setText(info.getStart_time() + "-" + info.getEnd_time());
+                    holder.txtSize.setVisibility(View.VISIBLE);
+                    holder.txtSize.setText(FormatUtils.formatFileSize(info.getSize()));
+                    holder.txtTitle.setText(info.getName());
+                    Glide.with(getActivity()).load("").placeholder(R.drawable.ic_launcher_background).error(R.drawable.ic_launcher_background)
+                            .into(holder.img);
+                }
             }
         };
     }
@@ -170,6 +196,7 @@ public class ServerHistoryListView extends OntListView {
                 serverHistoryObj.setEnd_time(videoObj.optString("end_time"));
                 serverHistoryObj.setRtmp_url(videoObj.optString("rtmp_url"));
                 serverHistoryObj.setHls_url(videoObj.optString("hls_url"));
+                serverHistoryObj.setPlay_cycle(false);
                 serverDeviceVideoInfoList.add(serverHistoryObj);
             }
 
@@ -178,5 +205,18 @@ public class ServerHistoryListView extends OntListView {
 
         }
         return null;
+    }
+
+    private List<IListItem> addPlayCycleItem(List<IListItem> dataList) {
+
+        if (dataList == null) {
+
+            dataList = new ArrayList<>(0);
+        }
+
+        ServerHistoryInfo serverHistoryObj = new ServerHistoryInfo();
+        serverHistoryObj.setPlay_cycle(true);
+        dataList.add(0, serverHistoryObj);
+        return dataList;
     }
 }

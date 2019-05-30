@@ -123,11 +123,8 @@ public class LivePage extends FrameLayout {
                         .setData(Uri.parse(url))
                         .putExtra(PlayerActivity.IS_LIVE, true)
                         .putExtra(PlayerActivity.IS_LOCAL, false)
-                        .putExtra(PlayerActivity.CAN_RECORD, true)
-                        .putExtra(PlayerActivity.VIDEO_TITLE, "直播")
-                        .putExtra(PlayerActivity.DEVICE_ID, mDeviceEntryInfo.mDeviceId)
-                        .putExtra(PlayerActivity.Channel_ID, mDeviceEntryInfo.mChannelId)
-                        .putExtra(PlayerActivity.API_KEY, mDeviceEntryInfo.mApiKey));
+                        .putExtra(PlayerActivity.PLAY_CYCLE, false)
+                        .putExtra(PlayerActivity.VIDEO_TITLE, "直播"));
             }
         });
     }

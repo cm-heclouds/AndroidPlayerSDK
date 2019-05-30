@@ -13,8 +13,9 @@ import android.view.OrientationEventListener;
 import android.widget.FrameLayout;
 
 import com.ont.media.player.controller.BaseVideoController;
-import com.ont.media.player.listener.OnVideoViewStateChangeListener;
+import com.ont.media.player.listener.OnIjkVideoViewListener;
 import com.ont.media.player.listener.OnPlayerEventListener;
+import com.ont.media.player.listener.OnVideoViewStateChangeListener;
 import com.ont.media.player.util.ProgressUtil;
 import com.ont.media.player.util.WindowUtil;
 
@@ -35,13 +36,15 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
     protected IPlayer mMediaPlayer;//播放器
     @Nullable
     protected BaseVideoController mVideoController;//控制器
+    protected OnIjkVideoViewListener mVideoViewListener;
+    protected TimeBarView mTimeBarView;
     protected int bufferPercentage;//缓冲百分比
     protected boolean isMute;//是否静音
 
     protected String mCurrentUrl;//当前播放视频的地址
     protected Map<String, String> mHeaders;//当前视频地址的请求头
     protected AssetFileDescriptor mAssetFileDescriptor;//assets文件
-    protected long mCurrentPosition;//当前正在播放视频的位置
+    protected long[] mCurrentPosition;//当前正在播放视频的位置
     protected String mCurrentTitle = "";//当前正在播放视频的标题
 
     //播放器的各种状态
@@ -55,10 +58,10 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
     public static final int STATE_BUFFERING = 6;
     public static final int STATE_BUFFERED = 7;
     protected int mCurrentPlayState = STATE_IDLE;//当前播放器的状态
+    protected int mWaitSeek = 0; // 底层是否正在等待seek（时间轴播放使用）
 
     public static final int PLAYER_NORMAL = 10;        // 普通播放器
     public static final int PLAYER_FULL_SCREEN = 11;   // 全屏播放器
-    protected int mCurrentPlayerState = PLAYER_NORMAL;
 
     protected AudioManager mAudioManager;//系统音频管理器
     @Nullable
@@ -71,6 +74,7 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
 
     protected boolean isLockFullScreen;//是否锁定屏幕
     protected PlayerConfig mPlayerConfig;//播放器配置
+    protected PlayCycleConfig mPlayCycleConfig;
 
     protected List<OnVideoViewStateChangeListener> mOnVideoViewStateChangeListeners;
 
@@ -152,13 +156,22 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
     public BaseVideoView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mPlayerConfig = new PlayerConfig.Builder().build();
+        mCurrentPosition = new long[3];
+        mCurrentPosition[0] = -1;
+        mCurrentPosition[1] = 0;
+        mCurrentPosition[2] = 0;
     }
 
     /**
      * 初始化播放器
      */
     protected void initPlayer() {
+
+        mCurrentPosition[0] = -1;
+        mCurrentPosition[1] = 0;
+        mCurrentPosition[2] = 0;
         if (mMediaPlayer == null) {
+
             if (mPlayerConfig.mAbstractPlayer != null) {
                 mMediaPlayer = mPlayerConfig.mAbstractPlayer;
             } else {
@@ -166,10 +179,6 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
             }
             mMediaPlayer.setOnPlayerEventListener(this);
             mMediaPlayer.initPlayer();
-            mMediaPlayer.setEnableMediaCodec(mPlayerConfig.enableMediaCodec);
-            mMediaPlayer.setLooping(mPlayerConfig.isLooping);
-            mMediaPlayer.setScreenshotPath(mPlayerConfig.screenshotPath);
-            mMediaPlayer.setEnableMediaPlayerSoftScreenshot(mPlayerConfig.enableMediaPlayerSoftScreenshot);
         }
     }
 
@@ -177,33 +186,44 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
 
     protected abstract void setPlayerState(int playerState);
 
+    protected int getWaitSeek() {
+        return mWaitSeek;
+    }
+
+    protected void setWaitSeek(int waitSeek) {
+        this.mWaitSeek = waitSeek;
+    }
+
     /**
      * 开始准备播放（直接播放）
      */
     protected void startPrepare(boolean needReset) {
-        if (TextUtils.isEmpty(mCurrentUrl) && mAssetFileDescriptor == null) return;
-        if (needReset) mMediaPlayer.reset();
+
+        if (TextUtils.isEmpty(mCurrentUrl) && mAssetFileDescriptor == null) {
+
+            return;
+        }
+        if (needReset) {
+
+            mMediaPlayer.reset();
+        }
+        mMediaPlayer.setPlayerConfig(mPlayerConfig);
+
         if (mAssetFileDescriptor != null) {
+
             mMediaPlayer.setDataSource(mAssetFileDescriptor);
-        } /*else if (mPlayerConfig.isCache && !mCurrentUrl.startsWith("file://")) {
-            mCacheServer = getCacheServer();
-            String proxyPath = mCacheServer.getProxyUrl(mCurrentUrl);
-            mCacheServer.registerCacheListener(cacheListener, mCurrentUrl);
-            if (mCacheServer.isCached(mCurrentUrl)) {
-                bufferPercentage = 100;
-            }
-            mMediaPlayer.setDataSource(proxyPath, mHeaders);
-        }*/ else {
+        }  else {
+
             mMediaPlayer.setDataSource(mCurrentUrl, mHeaders);
+        }
+        if (mPlayerConfig.playType == PlayerConfig.PlayType.TYPE_CYCLE) {
+
+            mMediaPlayer.setPlayCycleConfig(mPlayCycleConfig);
         }
         mMediaPlayer.prepareAsync();
         setPlayState(STATE_PREPARING);
         setPlayerState(isFullScreen() ? PLAYER_FULL_SCREEN : PLAYER_NORMAL);
     }
-
-    /*private HttpProxyCacheServer getCacheServer() {
-        return VideoCacheManager.getProxy(getContext().getApplicationContext());
-    }*/
 
     /**
      * 开始播放
@@ -230,10 +250,15 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
             mAudioFocusHelper = new AudioFocusHelper();
         }
         if (mPlayerConfig.savingProgress) {
-            mCurrentPosition = ProgressUtil.getSavedProgress(mCurrentUrl);
+            mCurrentPosition[1] = ProgressUtil.getSavedProgress(mCurrentUrl);
         }
         if (mPlayerConfig.mAutoRotate)
             orientationEventListener.enable();
+
+        if (mTimeBarView != null) {
+
+            mTimeBarView.init();
+        }
         initPlayer();
         startPrepare(false);
     }
@@ -279,7 +304,7 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
      */
     public void stopPlayback() {
         if (mPlayerConfig.savingProgress && isInPlaybackState())
-            ProgressUtil.saveProgress(mCurrentUrl, mCurrentPosition);
+            ProgressUtil.saveProgress(mCurrentUrl, mCurrentPosition[1]);
         if (mMediaPlayer != null) {
             mMediaPlayer.stop();
             setPlayState(STATE_IDLE);
@@ -295,7 +320,7 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
      */
     public void release() {
         if (mPlayerConfig.savingProgress && isInPlaybackState())
-            ProgressUtil.saveProgress(mCurrentUrl, mCurrentPosition);
+            ProgressUtil.saveProgress(mCurrentUrl, mCurrentPosition[1]);
         if (mMediaPlayer != null) {
             mMediaPlayer.release();
             mMediaPlayer = null;
@@ -313,7 +338,7 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
         /*if (mCacheServer != null)
             mCacheServer.unregisterCacheListener(cacheListener);*/
         isLockFullScreen = false;
-        mCurrentPosition = 0;
+        mCurrentPosition[1] = 0;
     }
 
     /**
@@ -370,22 +395,38 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
      * 获取当前播放的位置
      */
     @Override
-    public long getCurrentPosition() {
+    public long[] getCurrentPosition() {
         if (isInPlaybackState()) {
             mCurrentPosition = mMediaPlayer.getCurrentPosition();
             return mCurrentPosition;
         }
-        return 0;
+        long[] tmp = new long[3];
+        tmp[0] = -1;
+        tmp[1] = 0;
+        tmp[2] = 0;
+        return tmp;
     }
 
     /**
      * 调整播放进度
      */
     @Override
-    public void seekTo(long pos) {
-        if (isInPlaybackState()) {
-            mMediaPlayer.seekTo(pos);
+    public int seekTo(long reference, long pos) {
+
+        if (mPlayerConfig.playType == PlayerConfig.PlayType.TYPE_CYCLE) {
+
+            if (mCurrentPlayState == STATE_ERROR || mCurrentPlayState == STATE_PLAYBACK_COMPLETED) {
+
+                retry(false, reference == -1 && pos == -1);
+                return 0;
+            }
         }
+
+        if (isInPlaybackState() || getWaitSeek() != 0) {
+            return mMediaPlayer.seekTo(reference, pos);
+        }
+
+        return -1;
     }
 
     /**
@@ -454,11 +495,8 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
         this.mPlayerConfig = config;
     }
 
-    /**
-     * 获取当前播放器的状态
-     */
-    public int getCurrentPlayerState() {
-        return mCurrentPlayerState;
+    public void setPlayCycleConfig(PlayCycleConfig config) {
+        this.mPlayCycleConfig = config;
     }
 
     /**
@@ -492,8 +530,8 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
      */
     @Override
     public void refresh() {
-        mCurrentPosition = 0;
-        retry();
+        mCurrentPosition[1] = 0;
+        retry(true, false);
     }
 
     /**
@@ -525,7 +563,7 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
      * 一开始播放就seek到预先设置好的位置
      */
     public void skipPositionWhenPlay(int position) {
-        this.mCurrentPosition = position;
+        this.mCurrentPosition[1] = position;
     }
 
     /**
@@ -652,6 +690,13 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
         }
     }
 
+    @Override
+    public int getVideoTimeSlots(int cookie, long startTime, long endTime, IMediaPlayer.IGetVideoTimeSlotCallback callback) {
+
+        // TODO betali
+        return mMediaPlayer.getVideoTimeSlots(cookie, startTime, endTime, callback);
+    }
+
     /**
      * 视频播放出错回调
      */
@@ -667,11 +712,11 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
     public void onCompletion() {
         setPlayState(STATE_PLAYBACK_COMPLETED);
         setKeepScreenOn(false);
-        mCurrentPosition = 0;
+        mCurrentPosition[1] = 0;
     }
 
     @Override
-    public void onInfo(int what, int extra) {
+    public void onInfo(int what, int extra, Object obj) {
         switch (what) {
             case IMediaPlayer.MEDIA_INFO_BUFFERING_START:
                 setPlayState(STATE_BUFFERING);
@@ -683,20 +728,32 @@ public abstract class BaseVideoView extends FrameLayout implements IVideoView, O
                 setPlayState(STATE_PLAYING);
                 if (getWindowVisibility() != VISIBLE) pause();
                 break;
+            case IjkMediaPlayer.MEDIA_INFO_WAIT_SEEK:
+                setWaitSeek(extra);
+                break;
         }
     }
 
     @Override
     public void onPrepared() {
+
         setPlayState(STATE_PREPARED);
-        if (mCurrentPosition > 0) {
-            seekTo(mCurrentPosition);
+
+        if (mPlayerConfig.playType == PlayerConfig.PlayType.TYPE_NORMAL) {
+
+            if (mCurrentPosition[1] > 0) {
+
+                seekTo(mCurrentPosition[0], mCurrentPosition[1]);
+            }
         }
     }
 
     @Override
     public void onScreenshotComplete(int ret, String path) {
-        mVideoController.onScreenshotComplete(ret, path);
+
+        if (mVideoViewListener != null) {
+            mVideoViewListener.onScreenshotComplete(ret, path);
+        }
     }
 }
 

@@ -12,6 +12,11 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.ont.player.sample.def.IRequestDef;
+import com.ont.player.sample.utils.PropertyUtils;
+
+import java.util.Properties;
+
 public class MainActivity extends AppCompatActivity {
 
     private EditText mEdtDeviceId;
@@ -38,9 +43,9 @@ public class MainActivity extends AppCompatActivity {
 
                 saveDeviceInfo();
                 Intent intent = new Intent(MainActivity.this, PlayerSelectActivity.class);
-                intent.putExtra(PlayerActivity.DEVICE_ID, getDeviceId())
-                        .putExtra(PlayerActivity.Channel_ID, getChannelId())
-                        .putExtra(PlayerActivity.API_KEY, getApiKey());
+                intent.putExtra(PlayerSelectActivity.DEVICE_ID, getDeviceId())
+                        .putExtra(PlayerSelectActivity.CHANNEL_ID, getChannelId())
+                        .putExtra(PlayerSelectActivity.API_KEY, getApiKey());
                 startActivity(intent);
             }
         });
@@ -105,9 +110,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void initDefaultDeviceInfo() {
 
-        mEdtDeviceId.setText("xxxxxxx");
-        mEdtChannel.setText("xxx");
-        mEdtApiKey.setText("xxxxxxxxxxxxxxx");
+        Properties properties = PropertyUtils.getProperties(this);
+        mEdtDeviceId.setText(properties.getProperty("device.id"));
+        mEdtChannel.setText(properties.getProperty("device.channel.id"));
+        mEdtApiKey.setText(properties.getProperty("device.api.key"));
     }
 
     private void bindEditWatcher() {

@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 import com.ont.media.player.IjkVideoView;
 import com.ont.media.player.IVideoView;
 import com.ont.media.player.R;
+import com.ont.media.player.TimeBarView;
 import com.ont.media.player.util.PlayerConstants;
 import com.ont.media.player.util.WindowUtil;
 import com.ont.media.player.widget.StatusView;
@@ -31,7 +32,9 @@ public abstract class BaseVideoController extends FrameLayout {
 
     protected View controllerView;//控制器视图
     protected IVideoView mVideoView;//播放器
+    protected TimeBarView mTimeBarView; // 时间轴
     protected boolean mShowing;//控制器是否处于显示状态
+    protected boolean mTimeBarShowing;
     protected boolean isLocked;
     protected int sDefaultTimeout = 4000;
     private StringBuilder mFormatBuilder;
@@ -90,7 +93,7 @@ public abstract class BaseVideoController extends FrameLayout {
                     @Override
                     public void onClick(View v) {
                         hideStatusView();
-                        mVideoView.retry();
+                        mVideoView.retry(true, false);
                     }
                 });
                 this.addView(mStatusView, 0);
@@ -220,6 +223,12 @@ public abstract class BaseVideoController extends FrameLayout {
         this.mVideoView = videoView;
     }
 
+    public void setTimeBarView(TimeBarView timeBarView) {
+
+        this.mTimeBarView = timeBarView;
+        mTimeBarShowing = true;
+    }
+
     // added by betali on 2018/08/31
     /**
      * 语音推送启停
@@ -227,27 +236,7 @@ public abstract class BaseVideoController extends FrameLayout {
     public void opPushAudio(boolean start) {}
 
     /**
-     * 播放器回调：该协议是否支持语音推送
-     */
-    public void onSupportPushAudio(boolean support) {}
-
-    /**
-     * 播放器回调：当前状态是否能开启语音推送
-     */
-    public void onEnablePushAudio(boolean enable){}
-
-    /**
-     * 播放器回调：语音推送被动停止（网络，退出播放等条件）
-     */
-    public void onStoppedPushAudio() {}
-
-    /**
      * 截屏
      */
     public void doScreenshot() {}
-
-    /**
-     * 播放器回调：截图完成
-     */
-    public void onScreenshotComplete(int ret, String path) {}
 }

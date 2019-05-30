@@ -118,8 +118,8 @@ public abstract class AbstractMediaPlayer implements IMediaPlayer {
         return mOnErrorListener != null && mOnErrorListener.onError(this, what, extra);
     }
 
-    protected final boolean notifyOnInfo(int what, int extra) {
-        return mOnInfoListener != null && mOnInfoListener.onInfo(this, what, extra);
+    protected final boolean notifyOnInfo(int what, int extra, Object obj) {
+        return mOnInfoListener != null && mOnInfoListener.onInfo(this, what, extra, obj);
     }
 
     protected final void notifyOnTimedText(IjkTimedText text) {

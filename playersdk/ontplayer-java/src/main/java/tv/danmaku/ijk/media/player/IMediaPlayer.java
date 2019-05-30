@@ -30,6 +30,7 @@ import java.util.Map;
 
 import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
 import tv.danmaku.ijk.media.player.misc.ITrackInfo;
+import tv.danmaku.ijk.media.player.misc.TimeBarSlot;
 
 public interface IMediaPlayer {
     /*
@@ -46,6 +47,8 @@ public interface IMediaPlayer {
     int MEDIA_INFO = 200;
     int MEDIA_SET_VIDEO_SAR = 10001;
     int MEDIA_SCREENSHOT_COMPLETE = 30001;
+    int MEDIA_TIME_SLOTS_COMPLETE = 30011;
+    int MEDIA_MARS_XLOG = 50001;
 
     int MEDIA_INFO_UNKNOWN = 1;
     int MEDIA_INFO_STARTED_AS_NEXT = 2;
@@ -74,9 +77,11 @@ public interface IMediaPlayer {
     int MEDIA_INFO_MEDIA_ACCURATE_SEEK_COMPLETE = 10100;
 
     // customer
-    int MEDIA_INFO_STOP_WRITE_THREAD = 10200;
+    int MEDIA_INFO_STOP_WRITE_THREAD  = 10200;
     int MEDIA_INFO_STOPPED_PUSH_AUDIO = 10201;
     int MEDIA_INFO_START_WRITE_THREAD = 10202;
+    int MEDIA_INFO_TIME_SLOTS_INIT    = 10203;
+    int MEDIA_INFO_WAIT_SEEK           = 10204;
 
     int MEDIA_ERROR_UNKNOWN = 1;
     int MEDIA_ERROR_SERVER_DIED = 100;
@@ -111,6 +116,9 @@ public interface IMediaPlayer {
     void setDataSource(String path)
             throws IOException, IllegalArgumentException, SecurityException, IllegalStateException;
 
+    void setDataSource(String path, Map<String, String> headers)
+            throws IOException, IllegalArgumentException, SecurityException, IllegalStateException;
+
     String getDataSource();
 
     void prepareAsync() throws IllegalStateException;
@@ -133,9 +141,9 @@ public interface IMediaPlayer {
 
     void doScreenshot() throws IllegalStateException;
 
-    void seekTo(long msec) throws IllegalStateException;
+    int seekTo(long reference, long msec) throws IllegalStateException;
 
-    long getCurrentPosition();
+    long[] getCurrentPosition();
 
     long getDuration();
 
@@ -155,6 +163,8 @@ public interface IMediaPlayer {
 
     @Deprecated
     boolean isPlayable();
+
+    int getVideoTimeSlots(int cookie, long startTime, long endTime, IGetVideoTimeSlotCallback callback);
 
     void setOnPreparedListener(OnPreparedListener listener);
 
@@ -209,11 +219,15 @@ public interface IMediaPlayer {
     }
 
     interface OnInfoListener {
-        boolean onInfo(IMediaPlayer mp, int what, int extra);
+        boolean onInfo(IMediaPlayer mp, int what, int extra, Object obj);
     }
 
     interface OnTimedTextListener {
         void onTimedText(IMediaPlayer mp, IjkTimedText text);
+    }
+
+    interface IGetVideoTimeSlotCallback{
+        void OnComplete(int cookie, long startTime ,long endTime, int count, TimeBarSlot[] timeSlots);
     }
 
     /*--------------------

@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 /**
  * Created by betali on 2018/9/13.
@@ -25,6 +26,9 @@ public class SplashActivity extends AppCompatActivity {
 
         LinearLayout layoutSplash = findViewById(R.id.layout_root);
         layoutSplash.startAnimation(alphaAnimation);
+
+        TextView version = findViewById(R.id.text_version);
+        version.setText(version.getText() + BuildConfig.VERSION_NAME);
 
         //设置动画监听
         alphaAnimation.setAnimationListener(new Animation.AnimationListener() {

@@ -105,6 +105,7 @@ public class DeviceHitoryListView extends OntListView {
                                             .setData(Uri.parse(response))
                                             .putExtra(PlayerActivity.IS_LIVE, false)
                                             .putExtra(PlayerActivity.IS_LOCAL, false)
+                                            .putExtra(PlayerActivity.PLAY_CYCLE, false)
                                             .putExtra(PlayerActivity.VIDEO_TITLE, video_title));
                                 } else {
 

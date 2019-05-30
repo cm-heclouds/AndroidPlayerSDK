@@ -37,7 +37,7 @@ public class PlayUrlRequest extends OntPlayerRequest {
     @Override
     String getRequestUrl() {
 
-        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/ipc/video/play_address?device_id=%s&channel_id=%s&protocol_type=%s", device_id, channel_id, protocol_type);
+        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/play_address?device_id=%s&channel_id=%s&protocol_type=%s", device_id, channel_id, protocol_type);
     }
 
     @Override

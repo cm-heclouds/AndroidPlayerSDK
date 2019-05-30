@@ -29,9 +29,9 @@ public abstract class AbstractPlayer implements IPlayer {
         }
     }
 
-    protected final void notifyOnInfo(int what, int extra) {
+    protected final void notifyOnInfo(int what, int extra, Object obj) {
         if (mOnPlayerEventListener != null) {
-            mOnPlayerEventListener.onInfo(what, extra);
+            mOnPlayerEventListener.onInfo(what, extra, obj);
         }
     }
 

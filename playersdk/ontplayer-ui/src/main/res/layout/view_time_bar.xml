@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/white"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/fl_ruler_content"
+        android:layout_width="match_parent"
+        android:layout_height="69dp">
+
+        <com.ont.media.player.TimeRuler.RulerView
+            android:id="@+id/ruler_view"
+            android:layout_width="match_parent"
+            android:layout_height="69dp"
+            android:layout_centerInParent="true"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+        </com.ont.media.player.TimeRuler.RulerView>
+
+        <FrameLayout
+            android:id="@+id/date_layout"
+            android:layout_width="42dp"
+            android:layout_height="44dp"
+            android:background="@android:color/white" >
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="21dp"
+                android:layout_gravity="center"
+                android:background="@drawable/dateview"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/play_live_layout"
+            android:layout_width="42dp"
+            android:layout_height="44dp"
+            android:layout_gravity="right"
+            android:background="@color/color_black0">
+
+            <ImageView
+                android:layout_width="21dp"
+                android:layout_height="15dp"
+                android:layout_gravity="center"
+                android:background="@drawable/play_live_ico"/>
+        </FrameLayout>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="时间" />
+
+
+</LinearLayout>

@@ -46,7 +46,7 @@ public class HistoryVideoListRequest extends OntPlayerRequest {
 
     @Override
     String getRequestUrl() {
-        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/ipc/video/cmd_resp?device_id=%s&cmd_uuid=%s", device_id, cmd_uuid);
+        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/cmd_resp?device_id=%s&cmd_uuid=%s", device_id, cmd_uuid);
     }
 
     @Override

@@ -1,10 +1,10 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdkVersion gradle.ext.compileSdkVersion
     defaultConfig {
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdkVersion gradle.ext.minSdkVersion
+        targetSdkVersion gradle.ext.targetSdkVersion
     }
 
     buildTypes {
@@ -13,7 +13,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
 }
 
 dependencies {
@@ -21,12 +20,8 @@ dependencies {
 }
 
 ext {
-    versionCode = 3
-    versionName = "1.0.0"
-
     PUBLISH_GROUP_ID = 'com.ont.media'
     PUBLISH_ARTIFACT_ID = 'ontplayer-native'
-    PUBLISH_VERSION = versionName
+    PUBLISH_VERSION = gradle.ext.nativeModuleVersion
 }
-
-apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'
+apply from: new File(rootProject.projectDir, "tools/android-release-aar.gradle");

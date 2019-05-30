@@ -8,6 +8,8 @@ import com.ont.media.player.listener.OnPlayerEventListener;
 
 import java.util.Map;
 
+import tv.danmaku.ijk.media.player.IMediaPlayer;
+
 /**
  * Created by betali on 2018/10/18.
  */
@@ -63,7 +65,7 @@ public interface IPlayer {
     /**
      * 调整进度
      */
-    void seekTo(long time);
+    int seekTo(long reference, long time);
 
     /**
      * 释放播放器
@@ -73,7 +75,7 @@ public interface IPlayer {
     /**
      * 获取当前播放的位置
      */
-    long getCurrentPosition();
+    long[] getCurrentPosition();
 
     /**
      * 获取视频总时长
@@ -99,16 +101,6 @@ public interface IPlayer {
      * 设置音量
      */
     void setVolume(float v1, float v2);
-
-    /**
-     * 设置是否循环播放
-     */
-    void setLooping(boolean isLooping);
-
-    /**
-     * 设置硬解码
-     */
-    void setEnableMediaCodec(boolean isEnable);
 
     /**
      * 设置其他播放配置
@@ -137,10 +129,12 @@ public interface IPlayer {
     void doScreenshot();
 
     /**
-     * 设置截屏保存路径
-     * @param path 路径
+     *
+     * @param startTime
+     * @param endTime
+     * @return 时间段数组
      */
-    void setScreenshotPath(String path);
+    int getVideoTimeSlots(int cookie, long startTime, long endTime, IMediaPlayer.IGetVideoTimeSlotCallback callback);
 
     /**
      * 读时写
@@ -148,7 +142,14 @@ public interface IPlayer {
     int writeDuplex(short pktType, byte[] buf, int size, long ts);
 
     /**
-     * 是否开启播放器软解码截屏（仅surfaceview时开启有效）
+     * 设置播放器参数
+     * @param playerConfig
      */
-    void setEnableMediaPlayerSoftScreenshot(boolean enable);
+
+    void setPlayerConfig(PlayerConfig playerConfig);
+    /**
+     * 设置循环播放参数
+     * @param playCycleConfig
+     */
+    void setPlayCycleConfig(PlayCycleConfig playCycleConfig);
 }

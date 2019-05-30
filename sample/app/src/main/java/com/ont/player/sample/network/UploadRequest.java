@@ -66,7 +66,7 @@ public class UploadRequest extends OntPlayerRequest {
     @Override
     String getRequestUrl() {
 
-        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/ipc/video/picture/upload?device_id=%s&channel_id=%s&format=%s&name=%s&desc=%s", device_id, channel_id, format, name, desc);
+        return String.format(IRequestDef.IRequestUrlDef.API_URL + "/picture/upload?device_id=%s&channel_id=%s&format=%s&name=%s&desc=%s", device_id, channel_id, format, name, desc);
     }
 
     @Override

@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">android_play_proj</string>
-    <string name="onenet_logo_name">视频能力·播放端 V1.0.0</string>
+    <string name="onenet_logo_name">视频能力·播放端 V</string>
     <string name="page_live">视频直播</string>
     <string name="page_history">点播回放</string>
     <string name="video_server_history">服务器视频</string>
@@ -27,4 +27,6 @@
     <string name="record_save">录像保存为:</string>
     <string name="api_cmd_send_fail">指令发送失败</string>
     <string name="start_audio_fail">播放连接未建立</string>
+    <string name="screenshot_name">视频截图</string>
+    <string name="microphone_name">打开麦克风</string>
 </resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/screenshot_small_btn"
+        android:layout_width="49dp"
+        android:layout_height="49dp"
+        android:src="@mipmap/screenshot_small"/>
+
+    <ImageView
+        android:id="@+id/microphone_small_btn"
+        android:layout_width="49dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="10dp"
+        android:src="@mipmap/microphone_small"
+        android:visibility="gone"/>
+</LinearLayout>

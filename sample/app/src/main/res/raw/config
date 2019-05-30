@@ -1,0 +1,4 @@
+device.id=xxxxxx
+device.channel.id=xxx
+device.api.key=xxxxxxxxxxxxxxxxxxxxxxxx
+request.api.url=http://api.heclouds.com/ipc/video

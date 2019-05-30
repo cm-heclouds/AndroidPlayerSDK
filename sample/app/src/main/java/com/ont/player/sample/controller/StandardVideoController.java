@@ -1,18 +1,15 @@
 package com.ont.player.sample.controller;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -32,9 +29,6 @@ import com.ont.media.player.util.WindowUtil;
 import com.ont.media.player.widget.MarqueeTextView;
 import com.ont.player.sample.PlayerActivity;
 import com.ont.player.sample.R;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 直播/点播控制器
@@ -65,12 +59,6 @@ public class StandardVideoController extends GestureVideoController implements V
     private BatteryReceiver mBatteryReceiver;
     protected ImageView refresh;
 
-    protected PlayerActivity hostPage;
-    private TextView screenshotButton;
-    protected String deviceId;
-    protected String channelId;
-    protected String apiKey;
-
     public StandardVideoController(@NonNull Context context) {
         this(context, null);
     }
@@ -81,25 +69,6 @@ public class StandardVideoController extends GestureVideoController implements V
 
     public StandardVideoController(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-    }
-
-    public void setHostPage(PlayerActivity hostPage) {
-        this.hostPage = hostPage;
-    }
-
-    public void setApiKey(String apiKey) {
-
-        this.apiKey = apiKey;
-    }
-
-    public void setDeviceId(String deviceId) {
-
-        this.deviceId = deviceId;
-    }
-
-    public void setChannelId(String channelId) {
-
-        this.channelId = channelId;
     }
 
     @Override
@@ -139,8 +108,6 @@ public class StandardVideoController extends GestureVideoController implements V
         mBatteryReceiver = new BatteryReceiver(batteryLevel);
         refresh = controllerView.findViewById(R.id.iv_refresh);
         refresh.setOnClickListener(this);
-        screenshotButton = controllerView.findViewById(R.id.screen_shot);
-        screenshotButton.setOnClickListener(this);
     }
 
     @Override
@@ -165,20 +132,9 @@ public class StandardVideoController extends GestureVideoController implements V
         } else if (i == R.id.iv_play || i == R.id.thumb) {
             doPauseResume();
         } else if (i == R.id.iv_replay) {
-            mVideoView.retry();
+            mVideoView.retry(true, false);
         } else if (i == R.id.iv_refresh) {
             mVideoView.refresh();
-        } else if (i == R.id.screen_shot) {
-
-            if (isSDCardPermissionGranted()) {
-
-                doScreenshot();
-                // TODO betali
-                screenshotButton.setEnabled(false);
-            } else {
-
-                requestSDCardPermission();
-            }
         }
     }
 
@@ -203,6 +159,10 @@ public class StandardVideoController extends GestureVideoController implements V
                 sysTime.setVisibility(View.GONE);
                 batteryLevel.setVisibility(View.GONE);
                 topContainer.setVisibility(View.GONE);
+                if (!mTimeBarShowing && mTimeBarView != null) {
+                    mTimeBarView.setVisibility(VISIBLE);
+                    mTimeBarShowing = true;
+                }
                 break;
             case IjkVideoView.PLAYER_FULL_SCREEN:
                 L.e("PLAYER_FULL_SCREEN");
@@ -218,6 +178,10 @@ public class StandardVideoController extends GestureVideoController implements V
                     topContainer.setVisibility(View.VISIBLE);
                 } else {
                     lock.setVisibility(View.GONE);
+                }
+                if (mTimeBarShowing && mTimeBarView != null) {
+                    mTimeBarView.setVisibility(GONE);
+                    mTimeBarShowing = false;
                 }
                 break;
         }
@@ -266,7 +230,7 @@ public class StandardVideoController extends GestureVideoController implements V
                 break;
             case IjkVideoView.STATE_PREPARED:
                 L.e("STATE_PREPARED");
-                if (!isLive) bottomProgress.setVisibility(View.VISIBLE);
+                if (!isLive && mTimeBarView == null) bottomProgress.setVisibility(View.VISIBLE);
 //                loadingProgress.setVisibility(GONE);
                 startPlayButton.setVisibility(View.GONE);
                 break;
@@ -346,7 +310,7 @@ public class StandardVideoController extends GestureVideoController implements V
     public void onStopTrackingTouch(SeekBar seekBar) {
         long duration = mVideoView.getDuration();
         long newPosition = (duration * seekBar.getProgress()) / videoProgress.getMax();
-        mVideoView.seekTo((int) newPosition);
+        mVideoView.seekTo(0, (int) newPosition);
         isDragging = false;
         post(mShowProgress);
         show();
@@ -362,11 +326,14 @@ public class StandardVideoController extends GestureVideoController implements V
         long newPosition = (duration * progress) / videoProgress.getMax();
         if (currTime != null)
             currTime.setText(stringForTime((int) newPosition));
+        Log.i("test2", "onProgressChange");
     }
 
     @Override
     public void hide() {
+
         if (mShowing) {
+
             if (mVideoView.isFullScreen()) {
                 lock.setVisibility(View.GONE);
                 if (!isLocked) {
@@ -376,11 +343,17 @@ public class StandardVideoController extends GestureVideoController implements V
                 bottomContainer.setVisibility(View.GONE);
                 bottomContainer.startAnimation(hideAnim);
             }
-            if (!isLive && !isLocked) {
+            if (!isLive && !isLocked && mTimeBarView == null) {
                 bottomProgress.setVisibility(View.VISIBLE);
                 bottomProgress.startAnimation(showAnim);
             }
             mShowing = false;
+        }
+
+        if (mVideoView.isFullScreen() && mTimeBarShowing && mTimeBarView != null) {
+
+            mTimeBarView.setVisibility(View.GONE);
+            mTimeBarShowing = false;
         }
     }
 
@@ -392,15 +365,18 @@ public class StandardVideoController extends GestureVideoController implements V
     }
 
     private void show(int timeout) {
+
         if (sysTime != null)
             sysTime.setText(getCurrentSystemTime());
+
         if (!mShowing) {
+
             if (mVideoView.isFullScreen()) {
                 lock.setVisibility(View.VISIBLE);
                 if (!isLocked) {
                     showAllViews();
                 }
-            } else {
+            } else if (mTimeBarView == null){
                 bottomContainer.setVisibility(View.VISIBLE);
                 bottomContainer.startAnimation(showAnim);
             }
@@ -410,6 +386,13 @@ public class StandardVideoController extends GestureVideoController implements V
             }
             mShowing = true;
         }
+
+        if (!mTimeBarShowing && mTimeBarView != null) {
+
+            mTimeBarView.setVisibility(View.VISIBLE);
+            mTimeBarShowing = true;
+        }
+
         removeCallbacks(mFadeOut);
         if (timeout != 0) {
             postDelayed(mFadeOut, timeout);
@@ -417,8 +400,10 @@ public class StandardVideoController extends GestureVideoController implements V
     }
 
     private void showAllViews() {
-        bottomContainer.setVisibility(View.VISIBLE);
-        bottomContainer.startAnimation(showAnim);
+        if (mTimeBarView == null) {
+            bottomContainer.setVisibility(View.VISIBLE);
+            bottomContainer.startAnimation(showAnim);
+        }
         topContainer.setVisibility(View.VISIBLE);
         topContainer.startAnimation(showAnim);
     }
@@ -430,6 +415,7 @@ public class StandardVideoController extends GestureVideoController implements V
 
     @Override
     protected int setProgress() {
+
         if (mVideoView == null || isDragging) {
             return 0;
         }
@@ -440,8 +426,11 @@ public class StandardVideoController extends GestureVideoController implements V
 
         if (isLive) return 0;
 
-        int position = (int) mVideoView.getCurrentPosition();
+        int position = (int) (mVideoView.getCurrentPosition())[1];
         int duration = (int) mVideoView.getDuration();
+        if (mTimeBarView != null) {
+            mTimeBarView.updateCurrentMills((mVideoView.getCurrentPosition())[0], (mVideoView.getCurrentPosition())[1], (mVideoView.getCurrentPosition())[2]);
+        }
         if (videoProgress != null) {
             if (duration > 0) {
                 videoProgress.setEnabled(true);
@@ -465,14 +454,13 @@ public class StandardVideoController extends GestureVideoController implements V
             totalTime.setText(stringForTime(duration));
         if (currTime != null)
             currTime.setText(stringForTime(position));
-
         return position;
     }
 
 
     @Override
     protected void slideToChangePosition(float deltaX) {
-        if (isLive) {
+        if (isLive || mTimeBarView != null) {
             mNeedSeek = false;
         } else {
             super.slideToChangePosition(deltaX);
@@ -496,49 +484,5 @@ public class StandardVideoController extends GestureVideoController implements V
             return true;
         }
         return super.onBackPressed();
-    }
-
-
-    private boolean isSDCardPermissionGranted() {
-
-        boolean sdCardWritePermissionGranted = ContextCompat.checkSelfPermission(hostPage, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED;
-
-        return sdCardWritePermissionGranted;
-    }
-
-    private void requestSDCardPermission() {
-
-        boolean sdCardWritePermissionGranted = ContextCompat.checkSelfPermission(hostPage, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED;
-
-        final List<String> permissionList = new ArrayList();
-        if (!sdCardWritePermissionGranted) {
-            permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        }
-        if (permissionList.size() > 0 )
-        {
-            String[] permissionArray = permissionList.toArray(new String[permissionList.size()]);
-            ActivityCompat.requestPermissions(hostPage, permissionArray, 9001);
-        }
-    }
-
-    // added by betali on 2018/08/31
-    @Override
-    public void doScreenshot() {
-        mVideoView.doScreenshot();
-    }
-
-    @Override
-    public void onScreenshotComplete(int ret, String path) {
-
-        screenshotButton.setEnabled(true);
-        if (ret != 0) {
-
-            Toast.makeText(hostPage, "截图失败", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Toast.makeText(hostPage, "截图成功，保存路径：" + path, Toast.LENGTH_LONG).show();
     }
 }

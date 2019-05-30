@@ -158,31 +158,6 @@
             android:src="@drawable/dkplayer_selector_lock_button"
             android:visibility="gone"
             tools:visibility="visible" />
-
-        <TextView
-            android:id="@+id/screen_shot"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center|start"
-            android:gravity="center"
-            android:layout_margin="12dp"
-            android:background="@color/dkplayer_background_color"
-            android:textColor="#ffffff"
-            android:text="截图"
-            tools:visibility="visible" />
-
-        <TextView
-            android:id="@+id/mic_audio"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center|start"
-            android:gravity="center"
-            android:layout_margin="12dp"
-            android:background="@color/dkplayer_background_color"
-            android:textColor="#ffffff"
-            android:text="录音"
-            android:visibility="gone"
-            tools:visibility="visible" />
     </LinearLayout>
 
     <ProgressBar

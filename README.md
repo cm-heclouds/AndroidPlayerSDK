@@ -15,6 +15,8 @@
 - 支持播放截屏（surfaceview硬解码场景除外）
 - 优化RTMP首屏打开时间
 - 优化可变帧率软解码流程，可根据帧率动态调整解码线程数
+- 提供时间轴的回放功能
+- 累计延迟追帧
 
 ### 获取
     
@@ -28,9 +30,9 @@ allprojects {
 }
 
 dependencies {
-    implementation 'com.ont.media:ontplayer-native:1.0.0'
-    implementation 'com.ont.media:ontplayer-java:1.0.0'
-    implementation 'com.ont.media:ontplayer-ui:1.0.0'
+    implementation 'com.ont.media:ontplayer-native:1.0.1'
+    implementation 'com.ont.media:ontplayer-java:1.0.1'
+    implementation 'com.ont.media:ontplayer-ui:1.0.1'
 }
 ```
 
@@ -45,6 +47,8 @@ protected void onCreate(@Nullable Bundle savedInstanceState) {
 		.autoRotate()//自动旋转屏幕
 		.setLocalVideo(isLocal) // 设置是否本地视频流
 		.enableMediaCodec() //启动硬解码
+		.setPlayType(playCycle ? PlayerConfig.PlayType.TYPE_CYCLE : PlayerConfig.PlayType.TYPE_NORMAL) // 循环录制播放
+        .setPlayLive(isLive)//设置是否为直播(非循环播放时生效)
 		//.usingSurfaceView() //使用SurfaceView
 		//.setScreenshotPath("/sdcard/xxxxx") // 设置截屏图保存位置，默认根目录下
 		//.enableMediaPlayerSoftScreenshot() // 开启软解码截图功能（使用SurfaceView+软解码时才需要开启）
@@ -139,10 +143,31 @@ public void onScreenshotComplete(int ret, String path) {
 }
 ```
 
+- play cycle
+
+```
+// config play cycle
+if (playCycle) {
+	mTimeBarView = new TimeBarView(this);
+	mIjkVideoView.setPlayCycleConfig(new PlayCycleConfig.Builder()
+			.setCacheStartSecond(xxxxxxx)
+			.setCacheEndSecond(xxxxxxxx)
+			.setCurrentShowSecond(xxxxxx)
+			.setPlayLive(true)
+			.setMaxCacheDuration(xxxxxx)
+			.setTimeoutSecond(10)
+			.setLiveUrl(xxxxxx)
+			.setTokenUrl(xxxxxx)
+			.setApiKey(xxxxxx)
+			.build());
+	mIjkVideoView.setTimeBarView(mTimeBarView); // 循环录制播放时间轴
+}
+```
+
 ### License
 
 ```
-Copyright (c) 2018 cmiot
+Copyright (c) 2019 cmiot
 Licensed under LGPLv2.1 or later
 ```
 

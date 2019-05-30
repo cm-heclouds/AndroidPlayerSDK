@@ -1,14 +1,14 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdkVersion gradle.ext.compileSdkVersion
 
     lintOptions {
         abortOnError false
     }
     defaultConfig {
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdkVersion gradle.ext.minSdkVersion
+        targetSdkVersion gradle.ext.targetSdkVersion
     }
     buildTypes {
         release {
@@ -23,12 +23,8 @@ dependencies {
 }
 
 ext {
-    versionCode = 3
-    versionName = "1.0.0"
-
     PUBLISH_GROUP_ID = 'com.ont.media'
     PUBLISH_ARTIFACT_ID = 'ontplayer-java'
-    PUBLISH_VERSION = versionName
+    PUBLISH_VERSION = gradle.ext.javaModuleVersion
 }
-
-apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'
+apply from: new File(rootProject.projectDir, "tools/android-release-aar.gradle");
